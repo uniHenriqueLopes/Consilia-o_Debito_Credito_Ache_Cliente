@@ -1,7 +1,27 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react';
 
 function DebitoCreditoComponet() {
     const fileInputRef = useRef(null);
+    const tableRef = useRef(null);
+
+    const [filters, setFilters] = useState({
+        pedidoOl: '',
+        pedidoVenda: '',
+        numeroNota: '',
+        produto: '',
+        dataInicio: '',
+        dataFim: ''
+    });
+
+    const [dadosFiltrados, setDadosFiltrados] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(30); // Itens por página
+
+    useEffect(() => {
+        if (tableRef.current) {
+            tableRef.current.style.overflowY = 'auto'; // Garantir que a rolagem vertical esteja ativada
+        }
+    }, [dadosFiltrados]);
 
     const handleImportClick = () => {
         fileInputRef.current.click();
@@ -15,12 +35,55 @@ function DebitoCreditoComponet() {
         }
     };
 
+    const handlePesquisar = async () => {
+        try {
+            const response = await fetch('http://localhost:3005/api/conciliacoes/filtrar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filters),
+            });
+
+            if (!response.ok) {
+                const erro = await response.json();
+                alert("Erro: " + erro.message);
+                return;
+            }
+
+            const data = await response.json();
+            setDadosFiltrados(data);
+        } catch (error) {
+            console.error("Erro ao buscar dados:", error);
+            alert("Erro ao buscar dados.");
+        }
+    };
+
+    const handleLimpar = () => {
+        setFilters({
+            pedidoOl: '',
+            pedidoVenda: '',
+            numeroNota: '',
+            produto: '',
+            dataInicio: '',
+            dataFim: ''
+        });
+        setDadosFiltrados([]);
+    };
+
+    const paginate = (dadosFiltrados, currentPage, itemsPerPage) => {
+        const indexOfLastItem = currentPage * itemsPerPage;
+        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+        return dadosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
+    };
+
+    const totalPages = Math.ceil(dadosFiltrados.length / itemsPerPage);
+
     return (
         <div className="debitoCredito">
             <div className="container-fluid">
                 <h2 className="text-center mb-4">Conciliação Crédito e Débito Ache</h2>
 
-                {/* Formulário */}
                 <div className="card p-4 mb-4 shadow-sm">
                     <h5 className="mb-3">Filtrar Pedidos</h5>
                     <div className="row g-4">
@@ -28,219 +91,184 @@ function DebitoCreditoComponet() {
                         <div className="col-md-6">
                             <div className="mb-3">
                                 <label className="form-label">Pedido OL</label>
-                                <input type="text" className="form-control" name="pedido_ol" />
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="pedidoOl"
+                                    value={filters.pedidoOl}
+                                    onChange={(e) => setFilters({ ...filters, pedidoOl: e.target.value })}
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Pedido de Venda</label>
-                                <input type="text" className="form-control" name="pedido_venda" />
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="pedidoVenda"
+                                    value={filters.pedidoVenda}
+                                    onChange={(e) => setFilters({ ...filters, pedidoVenda: e.target.value })}
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Número NF</label>
-                                <input type="text" className="form-control" name="numero_nf" />
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="numeroNota"
+                                    value={filters.numeroNota}
+                                    onChange={(e) => setFilters({ ...filters, numeroNota: e.target.value })}
+                                />
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Nome do Produto</label>
-                                <input type="text" className="form-control" name="nome_produto" />
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="produto"
+                                    value={filters.produto}
+                                    onChange={(e) => setFilters({ ...filters, produto: e.target.value })}
+                                />
                             </div>
                         </div>
 
                         {/* Coluna Direita */}
                         <div className="col-md-6">
                             <div className="mb-3">
-                                {/* <label className="form-label">Data de Entrada do Pedido OL</label> */}
                                 <div className="row">
                                     <div className="col-md-6">
-                                        <label className="form-label">Data de Entrada do Pedido OL Inicio</label>
-                                        <input type="date" className="form-control" name="data_pedido_ol_inicio" placeholder="Início" />
+                                        <label className="form-label">Data de Início</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            name="dataInicio"
+                                            value={filters.dataInicio}
+                                            onChange={(e) => setFilters({ ...filters, dataInicio: e.target.value })}
+                                        />
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label">Data de Entrada do Pedido OL Fim</label>
-                                        <input type="date" className="form-control" name="data_pedido_ol_fim" placeholder="Fim"/>
+                                        <label className="form-label">Data de Fim</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            name="dataFim"
+                                            value={filters.dataFim}
+                                            onChange={(e) => setFilters({ ...filters, dataFim: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Data de Emissão da NF (Intervalo) */}
-                            <div className="mb-3">
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <label className="form-label">Data de Emissão da NF Inicio</label>
-                                        <input type="date" className="form-control" name="data_emissao_nf_inicio" placeholder="Início"/>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="form-label">Data de Emissão da NF Fim</label>
-                                        <input type="date" className="form-control" name="data_emissao_nf_fim" placeholder="Fim"/>
-                                    </div>
-                                </div>
+                            {/* Botão Importar Arquivo */}
+                            <div className="d-flex justify-content-end mb-3">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: "none" }}
+                                    onChange={handleFileChange}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-info"
+                                    onClick={handleImportClick}
+                                >
+                                    📂 Importar Dados
+                                </button>
                             </div>
-                        </div>
-
-                        {/* Botão Importar Arquivo */}
-                        <div className="d-flex justify-content-end mb-3">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                style={{ display: "none" }}
-                                onChange={handleFileChange}
-                            />
-                            <button
-                                type="button"
-                                className="btn btn-info"
-                                onClick={handleImportClick}
-                            >
-                                📂 Importar Dados
-                            </button>
                         </div>
                     </div>
 
                     {/* Botões */}
                     <div className="row mt-3">
                         <div className="col-md-2">
-                            <button className="btn btn-primary w-100">Pesquisar</button>
+                            <button className="btn btn-primary w-100" onClick={handlePesquisar}>Pesquisar</button>
                         </div>
                         <div className="col-md-2">
-                            <button className="btn btn-secondary w-100" type="reset">Limpar</button>
+                            <button className="btn btn-secondary w-100" onClick={handleLimpar}>Limpar</button>
                         </div>
                     </div>
                 </div>
 
                 {/* Tabela */}
-                <div class="table-responsive">
-                    <table className="table table-bordered table-striped">
+                <div
+                    className="table-responsive"
+                    ref={tableRef}
+                    style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }} // Definindo altura máxima e rolagem
+                >
+                    <table className="table table-bordered table-striped display" style={{ fontSize: '0.7rem'}}>
                         <thead className="table-dark">
                             <tr>
-                                <th>ID</th>
-
-                                <th>Status</th>
-
-                                <th>Pedido OL</th>
-
-                                <th>Pedido_Venda</th>
-                                <th>Numero_nota</th>
-                                <th>Status_NF</th>
-                                <th>emissão_NF</th>
-                                <th>Codigo_Produto</th>
-                                <th>Produto_descricao</th>
-                                <th>quantidade_OL</th>
-                                <th>Qtd_Atendida_OL</th>
-                                <th>Qtd_Pedido_Venda</th>
-                                <th>Qtd_Faturada</th>
-                                <th>Qtd_Ache</th>
-                                <th>RFValorDebito</th>
-                                <th>RFAjusteTributario</th>
-                                <th>Desconto</th>
-                                <th>DescPadrao</th>
-                                <th>DataEntradaArquivo</th>
-                                <th>Empresa</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold' }}>ID</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Status</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido OL</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido Venda</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Número NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Status NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Emissão NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Código Produto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Produto Descrição</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Quantidade OL</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Atendida OL</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Pedido Venda</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Faturada</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Ache</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>RF Valor Débito</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>RF Ajuste Tributário</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Desconto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Desc Padrão</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Data Entrada Arquivo</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Empresa</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>Conciliado</td>
-                                <td>OL123456</td>
-                                <td>PV987654</td>
-                                <td>NF2025081001</td>
-                                <td>Emitida</td>
-                                <td>2025-08-10</td>
-                                <td>PRD00123</td>
-                                <td>Seringa Descartável 10ml</td>
-                                <td>500</td>
-                                <td>500</td>
-                                <td>500</td>
-                                <td>500</td>
-                                <td>500</td>
-                                <td>R$ 12.500,00</td>
-                                <td>R$ 0,00</td>
-                                <td>R$ 500,00</td>
-                                <td>10%</td>
-                                <td>2025-08-11</td>
-                                <td>Uni Hospitalar</td>
-                            </tr> <tr> <td>2</td>
-                                <td>Conciliado</td>
-                                <td>OL123457</td>
-                                <td>PV987655</td>
-                                <td>NF2025081002</td>
-                                <td>Emitida</td>
-                                <td>2025-08-10</td>
-                                <td>PRD00456</td>
-                                <td>Luvas de Procedimento M</td>
-                                <td>1000</td>
-                                <td>700</td>
-                                <td>1000</td>
-                                <td>700</td>
-                                <td>700</td>
-                                <td>R$ 7.000,00</td>
-                                <td>R$ 100,00</td>
-                                <td>R$ 300,00</td>
-                                <td>5%</td>
-                                <td>2025-08-11</td>
-                                <td>Uni Hospitalar</td>
-                            </tr> <tr> <td>3</td>
-                                <td>Não Conciliado</td>
-                                <td>OL123458</td>
-                                <td>PV987656</td>
-                                <td>NF2025081003</td>
-                                <td>Cancelada</td>
-                                <td>2025-08-09</td>
-                                <td>PRD00789</td>
-                                <td>Álcool 70% 1L</td>
-                                <td>200</td>
-                                <td>0</td>
-                                <td>200</td>
-                                <td>0</td>
-                                <td>0</td>
-                                <td>R$ 0,00</td>
-                                <td>R$ 0,00</td>
-                                <td>R$ 0,00</td>
-                                <td>0%</td>
-                                <td>2025-08-11</td>
-                                <td>Uni Hospitalar</td>
-                            </tr> <tr> <td>4</td>
-                                <td>Conciliado</td>
-                                <td>OL123459</td>
-                                <td>PV987657</td>
-                                <td>NF2025081004</td>
-                                <td>Emitida</td>
-                                <td>2025-08-11</td>
-                                <td>PRD00321</td>
-                                <td>Máscara Cirúrgica Tripla</td>
-                                <td>1500</td>
-                                <td>1500</td>
-                                <td>1500</td>
-                                <td>1500</td>
-                                <td>1500</td>
-                                <td>R$ 18.000,00</td>
-                                <td>R$ 0,00</td>
-                                <td>R$ 900,00</td>
-                                <td>15%</td>
-                                <td>2025-08-12</td>
-                                <td>Uni Hospitalar</td>
-                            </tr>
-                            <tr>
-                                <td>5</td>
-                                <td>Conciliado</td>
-                                <td>OL123460</td>
-                                <td>PV987658</td>
-                                <td>NF2025081005</td>
-                                <td>Emitida</td>
-                                <td>2025-08-10</td>
-                                <td>PRD00987</td>
-                                <td>Termômetro Digital</td>
-                                <td>100</td>
-                                <td>60</td>
-                                <td>100</td>
-                                <td>60</td>
-                                <td>60</td>
-                                <td>R$ 3.600,00</td>
-                                <td>R$ 0,00</td>
-                                <td>R$ 200,00</td>
-                                <td>8%</td>
-                                <td>2025-08-12</td>
-                                <td>Uni Hospitalar</td>
-                            </tr>
+                            {paginate(dadosFiltrados, currentPage, itemsPerPage).length === 0 ? (
+                                <tr>
+                                    <td colSpan="20" className="text-center">Nenhum dado encontrado</td>
+                                </tr>
+                            ) : (
+                                paginate(dadosFiltrados, currentPage, itemsPerPage).map((item, index) => (
+                                    <tr key={index}>
+                                        <td style={{fontWeight: 'bold'}}>{item.id}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Status}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Pedido_OL}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Pedido_Venda}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Numero_nota}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Status_NF}</td>
+                                        <td style={{color:'#060607ff'}}>{item.emissão_NF}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Codigo_Produto}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Produto_descricao}</td>
+                                        <td style={{color:'#060607ff'}}>{item.quantidadeOl}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Qtd_Faturada}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Qtd_Ache}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Qtd_Faturada}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Qtd_Ache}</td>
+                                        <td style={{color:'#060607ff'}}>{item.RFValorDebito}</td>
+                                        <td style={{color:'#060607ff'}}>{item.RFAjusteTributario}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Desconto}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Desconto_padrao}</td>
+                                        <td style={{color:'#060607ff'}}>{item.DataEntradaArquivo}</td>
+                                        <td style={{color:'#060607ff'}}>{item.Empresa}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Paginação */}
+                <div className="d-flex justify-content-center mt-3">
+                    <button
+                        className="btn btn-outline-primary mx-2"
+                        onClick={() => setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)}
+                    >
+                        Anterior
+                    </button>
+                    <span className="my-auto">{`Página ${currentPage} de ${totalPages}`}</span>
+                    <button
+                        className="btn btn-outline-primary mx-2"
+                        onClick={() => setCurrentPage(currentPage < totalPages ? currentPage + 1 : currentPage)}
+                    >
+                        Próxima
+                    </button>
                 </div>
 
                 {/* Botão Exportar */}
@@ -255,7 +283,7 @@ function DebitoCreditoComponet() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default DebitoCreditoComponet
+export default DebitoCreditoComponet;
