@@ -195,9 +195,8 @@ function DebitoCreditoComponet() {
                     style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }} // Definindo altura máxima e rolagem
                 >
                     <table className="table table-bordered table-striped display" style={{ fontSize: '0.7rem'}}>
-                        <thead className="table-dark">
+                        <thead className="table-light-">
                             <tr>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold' }}>ID</th>
                                 <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Status</th>
                                 <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido OL</th>
                                 <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido Venda</th>
@@ -227,13 +226,12 @@ function DebitoCreditoComponet() {
                             ) : (
                                 paginate(dadosFiltrados, currentPage, itemsPerPage).map((item, index) => (
                                     <tr key={index}>
-                                        <td style={{fontWeight: 'bold'}}>{item.id}</td>
                                         <td style={{color:'#060607ff'}}>{item.Status}</td>
                                         <td style={{color:'#060607ff'}}>{item.Pedido_OL}</td>
                                         <td style={{color:'#060607ff'}}>{item.Pedido_Venda}</td>
                                         <td style={{color:'#060607ff'}}>{item.Numero_nota}</td>
                                         <td style={{color:'#060607ff'}}>{item.Status_NF}</td>
-                                        <td style={{color:'#060607ff'}}>{item.emissão_NF}</td>
+                                        <td style={{color:'#060607ff'}}>{new Date(item.emissão_NF).toLocaleDateString('pt-BR')}</td>
                                         <td style={{color:'#060607ff'}}>{item.Codigo_Produto}</td>
                                         <td style={{color:'#060607ff'}}>{item.Produto_descricao}</td>
                                         <td style={{color:'#060607ff'}}>{item.quantidadeOl}</td>
