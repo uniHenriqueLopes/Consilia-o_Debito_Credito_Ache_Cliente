@@ -35,6 +35,22 @@ function DebitoCreditoComponet() {
         }
     };
 
+
+    const getRowStyleByStatus = (status) => {
+        switch (status?.toUpperCase()) {
+            case 'NÃO CONCILIADO':
+                return { backgroundColor: '#f8d7da' }; // Vermelho claro
+            case 'CONCILIADO':
+                return { backgroundColor: '#d4edda' }; // Verde claro
+            case 'NÃO FATURADA':
+                return { backgroundColor: '#fff3cd' }; // Amarelo claro
+            default:
+                return {}; // Sem cor
+        }
+    };
+
+
+
     const handlePesquisar = async () => {
         try {
             const response = await fetch('http://localhost:3005/api/conciliacoes/filtrar', {
@@ -194,28 +210,33 @@ function DebitoCreditoComponet() {
                     ref={tableRef}
                     style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }} // Definindo altura máxima e rolagem
                 >
-                    <table className="table table-bordered table-striped display" style={{ fontSize: '0.7rem'}}>
+                    <table className="table table-bordered table-striped display" style={{ fontSize: '0.7rem' }}>
                         <thead className="table-light-">
                             <tr>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Status</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido OL</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Pedido Venda</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Número NF</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Status NF</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Emissão NF</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Código Produto</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Produto Descrição</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Quantidade OL</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Atendida OL</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Pedido Venda</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Faturada</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Qtd Ache</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>RF Valor Débito</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>RF Ajuste Tributário</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Desconto</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Desc Padrão</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Data Entrada Arquivo</th>
-                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem' , color:'white',  fontWeight: 'bold'}}>Empresa</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Status</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Pedido Venda</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Nota_Ache</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Número NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Status NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Emissão NF</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Código Produto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Produto Descrição</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Quantidade OL</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Qtd Atendida OL</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Preço Unitario</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Valor Total UNI</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Valor Debito</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Valor Bruto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Valor Debito Bruto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>RF Ajuste_Tributario</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>prct Desconto</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>prct Desconto_Padrao</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>prct Custo_Margem</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>prct Debito</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>RF Aliquota_Interestadual</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>RF PISCofins</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>RF RedutorICMS</th>
+                                <th style={{ position: 'sticky', top: 0, backgroundColor: '#53555eff', fontSize: '0.72rem', color: 'white', fontWeight: 'bold' }}>Empresa</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -226,25 +247,30 @@ function DebitoCreditoComponet() {
                             ) : (
                                 paginate(dadosFiltrados, currentPage, itemsPerPage).map((item, index) => (
                                     <tr key={index}>
-                                        <td style={{color:'#060607ff'}}>{item.Status}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Pedido_OL}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Pedido_Venda}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Numero_nota}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Status_NF}</td>
-                                        <td style={{color:'#060607ff'}}>{new Date(item.emissão_NF).toLocaleDateString('pt-BR')}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Codigo_Produto}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Produto_descricao}</td>
-                                        <td style={{color:'#060607ff'}}>{item.quantidadeOl}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Qtd_Faturada}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Qtd_Ache}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Qtd_Faturada}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Qtd_Ache}</td>
-                                        <td style={{color:'#060607ff'}}>{item.RFValorDebito}</td>
-                                        <td style={{color:'#060607ff'}}>{item.RFAjusteTributario}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Desconto}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Desconto_padrao}</td>
-                                        <td style={{color:'#060607ff'}}>{item.DataEntradaArquivo}</td>
-                                        <td style={{color:'#060607ff'}}>{item.Empresa}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Status}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Pedido_Venda}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Nota_Ache}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Num_Nota}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Status_NF}</td>
+                                        <td style={{ color: '#060607ff' }}>{new Date(item.Dat_Emissao).toLocaleDateString('pt-BR')}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.codigo_Produto}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Nome_Produto}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Qtd_Faturada_Ache}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Quantidade_Produto_Uni}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Preço_Unitario_UNI}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Valor_Total_UNI}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Valor_Debito_Final}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Valor_Bruto}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Valor_Debito_Bruto}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.RF_Ajuste_Tributario}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.prct_Desconto}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.prct_Desconto_Padrao}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.prct_Custo_Margem}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.prct_Debito}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.RF_Aliquota_Interestadual}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.RF_PISCofins}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.RF_RedutorICMS}</td>
+                                        <td style={{ color: '#060607ff' }}>{item.Empresa}</td>
                                     </tr>
                                 ))
                             )}
