@@ -27,13 +27,136 @@ function DebitoCreditoComponet() {
         fileInputRef.current.click();
     };
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            console.log("Arquivo selecionado:", file.name);
-            // Aqui você pode chamar a função de leitura/envio do arquivo
+
+
+// 🔽 Função para parsear CSV com suporte a aspas
+    const parseCSV = (text) => {
+        const rows = [];
+        let row = [];
+        let value = '';
+        let insideQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (char === '"' && insideQuotes && nextChar === '"') {
+                value += '"';
+                i++;
+            } else if (char === '"') {
+                insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+                row.push(value.trim());
+                value = '';
+            } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+                if (value !== '' || row.length > 0) {
+                    row.push(value.trim());
+                    rows.push(row);
+                    row = [];
+                    value = '';
+                }
+                if (char === '\r' && nextChar === '\n') i++;
+            } else {
+                value += char;
+            }
+        }
+
+        if (value !== '' || row.length > 0) {
+            row.push(value.trim());
+            rows.push(row);
+        }
+
+        return rows;
+    };
+
+
+
+// 🔽 Manipula importação do arquivo
+    const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+        const text = e.target.result;
+        const parsed = parseCSV(text);
+
+        if (parsed.length < 2) {
+            alert("Arquivo CSV inválido ou vazio.");
+            return;
+        }
+
+        const headers = parsed[0];
+        const rows = parsed.slice(1);
+
+        const jsonParaBanco = rows.map((row) => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header.trim()] = row[index]?.trim() ?? '';
+            });
+
+            return {
+                Nome_do_Grupo: obj["Nome do Grupo"],
+                CNPJ_Distribuidor: obj["CNPJ Distribuidor"],
+                UF_origem: obj["UF origem"],
+                Numero_NF: obj["NF"],
+                EAN: obj["EAN"],
+                Dat_Emissao: obj["Data NF"],
+                Codigo_Material: obj["Código material"],
+                Apresentacao: obj["Apresentação produto"],
+                Familia: obj["Família"],
+                Qtd_Faturada: obj["Quantidade faturada"],
+                Quantidade_Produto_Uni: obj["Quantidade atendida"],
+                UF_Destino: 'UF destino', // pode ser calculado se necessário
+                Valor_Total_UNI: obj["Valor Bruto"],
+                Valor_Debito_Final: obj["Débito final"],
+                Valor_Bruto: obj["Valor Bruto"],
+                Valor_Debito_Bruto: obj["Débito Líquido"],
+                RF_Ajuste_Tributario: obj["Ajuste tributário"],
+                prct_Desconto: obj["% Desc. Calculado"],
+                prct_Desconto_Padrao: obj["% Desc. Padrão"],
+                prct_Custo_Margem: obj["% OL (margem/spread)"],
+                prct_Debito: obj["% Repasse"],
+                RF_Aliquota_Interestadual: obj["% ICMS"],
+                RF_PISCofins: obj["% Pis e Cofins"],
+                RF_RedutorICMS: '',
+                Empresa: obj["CNPJ Distribuidor"]
+            };
+        });
+
+        // ❗ Remover exibição na tabela, se não quiser mostrar os dados
+        // setDadosFiltrados(jsonParaBanco); ← remova ou comente esta linha
+
+        // ✅ Enviar para o backend
+        try {
+            // const response = await fetch('http://localhost:3005/api/conciliacoes/importar', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(jsonParaBanco)
+            // });
+
+            console.log(jsonParaBanco)
+
+            // if (!response.ok) {
+            //     const errorData = await response.json();
+            //     alert(`Erro ao importar: ${errorData.message}`);
+            //     return;
+            // }
+
+            alert("Dados importados com sucesso!");
+        } catch (error) {
+            console.error("Erro ao enviar os dados:", error);
+            alert("Erro ao enviar os dados para o servidor.");
         }
     };
+
+    reader.readAsText(file, 'UTF-8');
+};
+
+
 
 
     const getRowStyleByStatus = (status) => {
@@ -93,6 +216,9 @@ function DebitoCreditoComponet() {
         return dadosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
     };
 
+
+
+    
     const totalPages = Math.ceil(dadosFiltrados.length / itemsPerPage);
 
     return (
@@ -181,6 +307,7 @@ function DebitoCreditoComponet() {
                                     ref={fileInputRef}
                                     style={{ display: "none" }}
                                     onChange={handleFileChange}
+                                    accept=".csv"
                                 />
                                 <button
                                     type="button"
